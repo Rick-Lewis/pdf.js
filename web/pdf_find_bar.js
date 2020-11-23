@@ -15,6 +15,7 @@
 
 import { FindState } from "./pdf_find_controller.js";
 import { NullL10n } from "./ui_utils.js";
+import { parseQueryString } from "./ui_utils.js";
 
 const MATCHES_COUNT_LIMIT = 1000;
 
@@ -84,6 +85,26 @@ class PDFFindBar {
     });
 
     this.eventBus._on("resize", this._adjustWidth.bind(this));
+
+    //多词高亮查询
+    this.words = options.words || null;
+    this.findValue = '';
+    this.words.addEventListener("click", function(e) {
+      let previousClick = true;
+      if(e.target.className.includes('findNext')){
+        this.findValue = e.target.parentElement.previousElementSibling.innerText;
+        previousClick = false;
+        console.log('PDFViewWords words click listen findNext', this.findValue);
+        this.dispatchWordsEvent("again", previousClick);
+      } else if(e.target.className.includes('findPrevious')){
+        this.findValue = e.target.parentElement.previousElementSibling.innerText;
+        console.log('PDFViewWords words click listen findPrevious', this.findValue);
+        this.dispatchWordsEvent("again", previousClick);
+      } else if(e.target.className.includes('saveToPopular')){
+        this.findValue = e.target.parentElement.parentElement.firstElementChild.innerText;
+        console.log('PDFViewWords words click listen saveToPopularContainer', this.findValue);
+      }
+    });
   }
 
   reset() {
@@ -219,6 +240,7 @@ class PDFFindBar {
     this.findField.select();
     this.findField.focus();
 
+    this._initView();
     this._adjustWidth();
   }
 
@@ -265,6 +287,45 @@ class PDFFindBar {
       this.bar.classList.add("wrapContainers");
     }
   }
+
+  _initView(){
+    const hash = location.hash.split('#')[1];
+    const params = parseQueryString(hash);
+    if ("search" in params) {
+      let tempHtml = '';
+      let keys = params.search.split(',');
+      for(let i = 0; i <= keys.length -1; i++){
+          tempHtml = tempHtml + `<div class="list-item">
+          <div class="toolbarField">${keys[i]}</div>
+          <div class="splitToolbarButton">
+            <button class="toolbarButton findPrevious" title="Find the previous occurrence of the phrase" tabindex="92" data-l10n-id="find_previous">
+              <span data-l10n-id="find_previous_label">Previous</span>
+            </button>
+            <div class="splitToolbarButtonSeparator"></div>
+            <button class="toolbarButton findNext" title="Find the next occurrence of the phrase" tabindex="93" data-l10n-id="find_next">
+              <span data-l10n-id="find_next_label">Next</span>
+            </button>
+          </div>
+          <div class="saveToPopularContainer">
+              <button class="toolbarField saveToPopular" tabindex="97">保存为常用</button>
+          </div>
+        </div>`;
+      }
+      this.words.innerHTML = tempHtml;
+    }
+  }
+  dispatchWordsEvent(type, findPrev) {
+    this.eventBus.dispatch("find", {
+        source: this,
+        type,
+        query: this.findValue,
+        phraseSearch: false,
+        caseSensitive: false,
+        entireWord: false,
+        highlightAll: true,
+        findPrevious: findPrev,
+    });
+}
 }
 
 export { PDFFindBar };

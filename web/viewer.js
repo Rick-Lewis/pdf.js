@@ -13,18 +13,7 @@
  * limitations under the License.
  */
 
-import { AppOptions } from "./app_options.js";
-import { PDFViewerApplication } from "./app.js";
-
-/* eslint-disable-next-line no-unused-vars */
-const pdfjsVersion =
-  typeof PDFJSDev !== "undefined" ? PDFJSDev.eval("BUNDLE_VERSION") : void 0;
-/* eslint-disable-next-line no-unused-vars */
-const pdfjsBuild =
-  typeof PDFJSDev !== "undefined" ? PDFJSDev.eval("BUNDLE_BUILD") : void 0;
-
-window.PDFViewerApplication = PDFViewerApplication;
-window.PDFViewerApplicationOptions = AppOptions;
+"use strict";
 
 if (typeof PDFJSDev !== "undefined" && PDFJSDev.test("CHROME")) {
   var defaultUrl; // eslint-disable-line no-var
@@ -44,6 +33,12 @@ if (typeof PDFJSDev !== "undefined" && PDFJSDev.test("CHROME")) {
       chrome.runtime.sendMessage("showPageAction");
     }
   })();
+}
+
+let pdfjsWebApp, pdfjsWebAppOptions;
+if (typeof PDFJSDev !== "undefined" && PDFJSDev.test("PRODUCTION")) {
+  pdfjsWebApp = require("./app.js");
+  pdfjsWebAppOptions = require("./app_options.js");
 }
 
 if (typeof PDFJSDev !== "undefined" && PDFJSDev.test("MOZCENTRAL")) {
@@ -83,6 +78,7 @@ function getViewerConfiguration() {
       presentationModeButton: document.getElementById("presentationMode"),
       download: document.getElementById("download"),
       viewBookmark: document.getElementById("viewBookmark"),
+      viewWords: document.getElementById("viewWords"),
     },
     secondaryToolbar: {
       toolbar: document.getElementById("secondaryToolbar"),
@@ -148,6 +144,12 @@ function getViewerConfiguration() {
       findResultsCount: document.getElementById("findResultsCount"),
       findPreviousButton: document.getElementById("findPrevious"),
       findNextButton: document.getElementById("findNext"),
+      //多词高亮查询
+      words: document.getElementById("words"),
+    },
+    wordsView: {
+      toggleButton: document.getElementById("viewWordsFind"),
+      words: document.getElementById("words"),
     },
     passwordOverlay: {
       overlayName: "passwordOverlay",
@@ -196,15 +198,22 @@ function webViewerLoad() {
   const config = getViewerConfiguration();
   if (typeof PDFJSDev === "undefined" || !PDFJSDev.test("PRODUCTION")) {
     Promise.all([
+      import("pdfjs-web/app.js"),
+      import("pdfjs-web/app_options.js"),
       import("pdfjs-web/genericcom.js"),
       import("pdfjs-web/pdf_print_service.js"),
-    ]).then(function ([genericCom, pdfPrintService]) {
-      PDFViewerApplication.run(config);
+    ]).then(function ([app, appOptions, genericCom, pdfPrintService]) {
+      window.PDFViewerApplication = app.PDFViewerApplication;
+      window.PDFViewerApplicationOptions = appOptions.AppOptions;
+      app.PDFViewerApplication.run(config);
     });
   } else {
     if (typeof PDFJSDev !== "undefined" && PDFJSDev.test("CHROME")) {
-      AppOptions.set("defaultUrl", defaultUrl);
+      pdfjsWebAppOptions.AppOptions.set("defaultUrl", defaultUrl);
     }
+
+    window.PDFViewerApplication = pdfjsWebApp.PDFViewerApplication;
+    window.PDFViewerApplicationOptions = pdfjsWebAppOptions.AppOptions;
 
     if (typeof PDFJSDev !== "undefined" && PDFJSDev.test("GENERIC")) {
       // Give custom implementations of the default viewer a simpler way to
@@ -227,7 +236,7 @@ function webViewerLoad() {
       }
     }
 
-    PDFViewerApplication.run(config);
+    pdfjsWebApp.PDFViewerApplication.run(config);
   }
 }
 
@@ -239,5 +248,3 @@ if (
 } else {
   document.addEventListener("DOMContentLoaded", webViewerLoad, true);
 }
-
-export { PDFViewerApplication, AppOptions as PDFViewerApplicationOptions };

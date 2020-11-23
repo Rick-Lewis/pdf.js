@@ -57,6 +57,13 @@ See https://github.com/adobe-type-tools/cmap-resources
     </script>
 
     <script src="viewer.js" type="module-shim"></script>
+    
+    <script>
+      window.addEventListener("message", receiveMessage, false);
+      function receiveMessage(event) {
+          console.log('viewer.html message', event);
+      }
+    </script>
 <!--#endif-->
 
 <!--#if (GENERIC && !MINIFIED) -->
@@ -101,39 +108,71 @@ See https://github.com/adobe-type-tools/cmap-resources
           <div id="layersView" class="hidden">
           </div>
         </div>
-        <div id="sidebarResizer"></div>
+        <div id="sidebarResizer" class="hidden"></div>
       </div>  <!-- sidebarContainer -->
 
       <div id="mainContainer">
-        <div class="findbar hidden doorHanger" id="findbar">
-          <div id="findbarInputContainer">
-            <input id="findInput" class="toolbarField" title="Find" placeholder="Find in document…" tabindex="91" data-l10n-id="find_input">
+        <!-- <div class="wordsView hidden doorHanger" id="words"> -->
+          <!-- <div class="list-item">
+            <div class="toolbarField">商</div>
             <div class="splitToolbarButton">
-              <button id="findPrevious" class="toolbarButton findPrevious" title="Find the previous occurrence of the phrase" tabindex="92" data-l10n-id="find_previous">
+              <button class="toolbarButton findPrevious" title="Find the previous occurrence of the phrase" tabindex="92" data-l10n-id="find_previous">
                 <span data-l10n-id="find_previous_label">Previous</span>
               </button>
               <div class="splitToolbarButtonSeparator"></div>
-              <button id="findNext" class="toolbarButton findNext" title="Find the next occurrence of the phrase" tabindex="93" data-l10n-id="find_next">
+              <button class="toolbarButton findNext" title="Find the next occurrence of the phrase" tabindex="93" data-l10n-id="find_next">
                 <span data-l10n-id="find_next_label">Next</span>
               </button>
             </div>
           </div>
-
-          <div id="findbarOptionsOneContainer">
-            <input type="checkbox" id="findHighlightAll" class="toolbarField" tabindex="94">
-            <label for="findHighlightAll" class="toolbarLabel" data-l10n-id="find_highlight">Highlight all</label>
-            <input type="checkbox" id="findMatchCase" class="toolbarField" tabindex="95">
-            <label for="findMatchCase" class="toolbarLabel" data-l10n-id="find_match_case_label">Match case</label>
+          <div class="list-item">
+            <div class="toolbarField">修</div>
+            <div class="splitToolbarButton">
+              <button class="toolbarButton findPrevious" title="Find the previous occurrence of the phrase" tabindex="92" data-l10n-id="find_previous">
+                <span data-l10n-id="find_previous_label">Previous</span>
+              </button>
+              <div class="splitToolbarButtonSeparator"></div>
+              <button class="toolbarButton findNext" title="Find the next occurrence of the phrase" tabindex="93" data-l10n-id="find_next">
+                <span data-l10n-id="find_next_label">Next</span>
+              </button>
+            </div>
+          </div> -->
+        <!-- </div> -->
+        <div class="findbar hidden doorHanger" id="findbar">
+          <div>
+            <div id="findbarInputContainer">
+              <input id="findInput" class="toolbarField" title="Find" placeholder="Find in document…" tabindex="91" data-l10n-id="find_input">
+              <div class="splitToolbarButton">
+                <button id="findPrevious" class="toolbarButton findPrevious" title="Find the previous occurrence of the phrase" tabindex="92" data-l10n-id="find_previous">
+                  <span data-l10n-id="find_previous_label">Previous</span>
+                </button>
+                <div class="splitToolbarButtonSeparator"></div>
+                <button id="findNext" class="toolbarButton findNext" title="Find the next occurrence of the phrase" tabindex="93" data-l10n-id="find_next">
+                  <span data-l10n-id="find_next_label">Next</span>
+                </button>
+              </div>
+            </div>
+  
+            <div id="findbarOptionsOneContainer">
+              <input type="checkbox" id="findHighlightAll" class="toolbarField" tabindex="94">
+              <label for="findHighlightAll" class="toolbarLabel" data-l10n-id="find_highlight">Highlight all</label>
+              <input type="checkbox" id="findMatchCase" class="toolbarField" tabindex="95">
+              <label for="findMatchCase" class="toolbarLabel" data-l10n-id="find_match_case_label">Match case</label>
+            </div>
+            <div id="findbarOptionsTwoContainer">
+              <input type="checkbox" id="findEntireWord" class="toolbarField" tabindex="96">
+              <label for="findEntireWord" class="toolbarLabel" data-l10n-id="find_entire_word_label">Whole words</label>
+              <span id="findResultsCount" class="toolbarLabel hidden"></span>
+            </div>
+            <div id="saveToPopularContainer">
+              <button id="saveToPopular" class="toolbarField" tabindex="97">保存为常用</button>
+            </div>
+  
+            <div id="findbarMessageContainer">
+              <span id="findMsg" class="toolbarLabel"></span>
+            </div>
           </div>
-          <div id="findbarOptionsTwoContainer">
-            <input type="checkbox" id="findEntireWord" class="toolbarField" tabindex="96">
-            <label for="findEntireWord" class="toolbarLabel" data-l10n-id="find_entire_word_label">Whole words</label>
-            <span id="findResultsCount" class="toolbarLabel hidden"></span>
-          </div>
-
-          <div id="findbarMessageContainer">
-            <span id="findMsg" class="toolbarLabel"></span>
-          </div>
+          <div class="wordsView" id="words"></div>
         </div>  <!-- findbar -->
 
         <div id="secondaryToolbar" class="secondaryToolbar hidden doorHangerRight">
@@ -239,6 +278,9 @@ See https://github.com/adobe-type-tools/cmap-resources
                 </div>
                 <input type="number" id="pageNumber" class="toolbarField pageNumber" title="Page" value="1" size="4" min="1" tabindex="15" data-l10n-id="page" autocomplete="off">
                 <span id="numPages" class="toolbarLabel"></span>
+                <button id="viewWordsFind" class="toolbarButton" title="Words" tabindex="15" data-l10n-id="words">
+                  <span data-l10n-id="words_label">Words</span>
+                </button>
               </div>
               <div id="toolbarViewerRight">
                 <button id="presentationMode" class="toolbarButton presentationMode hiddenLargeView" title="Switch to Presentation Mode" tabindex="31" data-l10n-id="presentation_mode">

@@ -65,11 +65,6 @@ const defaultOptions = {
     value: false,
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE,
   },
-  enableScripting: {
-    /** @type {boolean} */
-    value: false,
-    kind: OptionKind.VIEWER + OptionKind.PREFERENCE,
-  },
   enableWebGL: {
     /** @type {boolean} */
     value: false,
@@ -116,7 +111,7 @@ const defaultOptions = {
   },
   printResolution: {
     /** @type {number} */
-    value: 150,
+    value: 300,
     kind: OptionKind.VIEWER,
   },
   renderer: {

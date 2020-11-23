@@ -19,7 +19,6 @@
   --sidebar-width: 200px;
   --sidebar-transition-duration: 200ms;
   --sidebar-transition-timing-function: ease;
-  --loadingBar-end-offset: 0;
 
   --toolbar-icon-opacity: 0.7;
   --doorhanger-icon-opacity: 0.9;
@@ -254,6 +253,10 @@ html[dir="rtl"] #sidebarContainer {
   right: calc(0px - var(--sidebar-width));
 }
 
+.loadingInProgress #sidebarContainer {
+  top: 36px;
+}
+
 #outerContainer.sidebarResizing #sidebarContainer {
   /* Improve responsiveness and avoid visual glitches when the sidebar is resized. */
   transition-duration: 0s;
@@ -403,35 +406,11 @@ html[dir="rtl"] #toolbarContainer,
 }
 
 #loadingBar {
-  position: absolute;
+  position: relative;
+  width: 100%;
   height: 4px;
   background-color: var(--body-bg-color);
   border-bottom: 1px solid var(--toolbar-border-color);
-
-  transition-duration: var(--sidebar-transition-duration);
-  transition-timing-function: var(--sidebar-transition-timing-function);
-}
-html[dir="ltr"] #loadingBar {
-  transition-property: left;
-  left: 0;
-  right: var(--loadingBar-end-offset);
-}
-html[dir="rtl"] #loadingBar {
-  transition-property: right;
-  left: var(--loadingBar-end-offset);
-  right: 0;
-}
-
-html[dir="ltr"] #outerContainer.sidebarOpen #loadingBar {
-  left: var(--sidebar-width);
-}
-html[dir="rtl"] #outerContainer.sidebarOpen #loadingBar {
-  right: var(--sidebar-width);
-}
-
-#outerContainer.sidebarResizing #loadingBar {
-  /* Improve responsiveness and avoid visual glitches when the sidebar is resized. */
-  transition-duration: 0s;
 }
 
 #loadingBar .progress {
@@ -495,6 +474,7 @@ html[dir="rtl"] #outerContainer.sidebarOpen #loadingBar {
 
 .findbar {
   min-width: 300px;
+  max-width: 750px;
   background-color: var(--toolbar-bg-color);
 }
 .findbar > div {
@@ -513,7 +493,7 @@ html[dir="rtl"] .findbar {
   right: 64px;
 }
 
-html[dir="ltr"] .findbar .splitToolbarButton {
+html[dir="ltr"] .findbar .splitToolbarButton, html[dir="ltr"] .wordsView .splitToolbarButton {
   margin-left: 0px;
   margin-top: 3px;
 }
@@ -850,6 +830,7 @@ html[dir="rtl"] .splitToolbarButtonSeparator {
   font-size: 12px;
   line-height: 14px;
   user-select: none;
+  /* Opera does not support user-select, use <... unselectable="on"> instead */
   cursor: default;
   box-sizing: border-box;
 }
@@ -1506,6 +1487,9 @@ html[dir="rtl"] .treeItemToggler::before {
   z-index: 1000;
   padding: 3px 6px;
 }
+.loadingInProgress #errorWrapper {
+  top: 37px;
+}
 
 #errorMessageLeft {
   float: left;
@@ -1899,3 +1883,44 @@ html[dir="rtl"] #documentPropertiesOverlay .row > * {
     display: none;
   }
 }
+
+#viewWordsFind.toolbarButton::before {
+  content: var(--toolbarButton-sidebarToggle-icon);
+}
+.findbar .wordsView {
+  background-color: var(--toolbar-bg-color);
+  height: auto;
+}
+/* html[dir="ltr"] .wordsView {
+  left: 252px;
+}
+html[dir="rtl"] .wordsView {
+  right: 252px;
+} */
+.findbar .wordsView .splitToolbarButton .toolbarButton {
+  background-color: var(--findbar-nextprevious-btn-bg-color);
+  border-radius: 0px;
+  height: 26px;
+  border-top: 1px solid var(--field-border-color);
+  border-bottom: 1px solid var(--field-border-color);
+}
+.findbar .wordsView .splitToolbarButton .toolbarButton::before {
+  top: 5px;
+}
+html[dir="ltr"] .findbar .wordsView .splitToolbarButton .findNext {
+  border-right: 1px solid var(--field-border-color);
+}
+.findbar .wordsView .splitToolbarButtonSeparator {
+  background-color: var(--field-border-color);
+  margin: 0;
+  padding: 13px 0;
+}
+.findbar .wordsView .list-item:nth-child(odd){
+  margin-right: 5px;
+}
+.findbar .wordsView .list-item > div:first-child{
+  width: 200px;
+}
+/* .wordsView .list-item{
+
+} */

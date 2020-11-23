@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-import { RenderingCancelledException, shadow } from "pdfjs-lib";
 import { CSS_UNITS } from "./ui_utils.js";
 import { PDFPrintServiceFactory } from "./app.js";
+import { shadow } from "pdfjs-lib";
 
 // Creates a placeholder with div and canvas with right size for the page.
 function composePage(
@@ -85,10 +85,8 @@ function composePage(
           }
           obj.done();
         },
-        function (reason) {
-          if (!(reason instanceof RenderingCancelledException)) {
-            console.error(reason);
-          }
+        function (error) {
+          console.error(error);
 
           if (currentRenderTask === thisRenderTask) {
             currentRenderTask.cancel();
@@ -117,7 +115,7 @@ function FirefoxPrintService(
   this.pdfDocument = pdfDocument;
   this.pagesOverview = pagesOverview;
   this.printContainer = printContainer;
-  this._printResolution = printResolution || 150;
+  this._printResolution = printResolution || 300;
   this._optionalContentConfigPromise =
     optionalContentConfigPromise || pdfDocument.getOptionalContentConfig();
 }

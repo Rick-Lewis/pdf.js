@@ -151,6 +151,12 @@ class PDFFindController {
           this._nextMatch();
           this._findTimeout = null;
         }, FIND_TIMEOUT);
+      } else if (cmd === "findMultiWord") {
+        console.log("findMultiWord");
+        this._findTimeout = setTimeout(() => {
+          this._nextMatch();
+          this._findTimeout = null;
+        }, FIND_TIMEOUT);
       } else if (this._dirtyMatch) {
         // Immediately trigger searching for non-'find' operations, when the
         // current state needs to be reset and matches re-calculated.
@@ -371,30 +377,39 @@ class PDFFindController {
     const matchesWithLength = [];
 
     // Divide the query into pieces and search for text in each piece.
-    const queryArray = query.match(/\S+/g);
-    for (let i = 0, len = queryArray.length; i < len; i++) {
-      const subquery = queryArray[i];
-      const subqueryLen = subquery.length;
+    let tempQuery = query.split(",");
+    for (let n = 0; n < tempQuery.length; n++) {
+      const queryArray = tempQuery[n].match(/\S+/g);
+      // console.log("pdf_find_controller.js", query, queryArray);
+      for (let i = 0, len = queryArray.length; i < len; i++) {
+        const subquery = queryArray[i];
+        const subqueryLen = subquery.length;
 
-      let matchIdx = -subqueryLen;
-      while (true) {
-        matchIdx = pageContent.indexOf(subquery, matchIdx + subqueryLen);
-        if (matchIdx === -1) {
-          break;
+        let matchIdx = -subqueryLen;
+        while (true) {
+          matchIdx = pageContent.indexOf(subquery, matchIdx + subqueryLen);
+          if (matchIdx === -1) {
+            break;
+          }
+          if (
+            entireWord &&
+            !this._isEntireWord(pageContent, matchIdx, subqueryLen)
+          ) {
+            continue;
+          }
+          // Other searches do not, so we store the length.
+          matchesWithLength.push({
+            match: matchIdx,
+            matchLength: subqueryLen,
+            skipped: false,
+          });
         }
-        if (
-          entireWord &&
-          !this._isEntireWord(pageContent, matchIdx, subqueryLen)
-        ) {
-          continue;
-        }
-        // Other searches do not, so we store the length.
-        matchesWithLength.push({
-          match: matchIdx,
-          matchLength: subqueryLen,
-          skipped: false,
-        });
       }
+    }
+
+    // Prepare arrays for storing the matches.
+    if (!this.pageMatchesLength) {
+      this.pageMatchesLength = []; // 清空这个要存储的数组
     }
 
     // Prepare arrays for storing the matches.
