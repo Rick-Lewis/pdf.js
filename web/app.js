@@ -62,7 +62,7 @@ import { PasswordPrompt } from "./password_prompt.js";
 import { PDFAttachmentViewer } from "./pdf_attachment_viewer.js";
 import { PDFDocumentProperties } from "./pdf_document_properties.js";
 import { PDFFindBar } from "./pdf_find_bar.js";
-import { PDFViewWords } from "./pdf_view_words.js";
+// import { PDFViewWords } from "./pdf_view_words.js";
 import { PDFFindController } from "./pdf_find_controller.js";
 import { PDFHistory } from "./pdf_history.js";
 import { PDFLayerViewer } from "./pdf_layer_viewer.js";
@@ -464,7 +464,7 @@ const PDFViewerApplication = {
 
     if (!this.supportsIntegratedFind) {
       this.findBar = new PDFFindBar(appConfig.findBar, eventBus, this.l10n);
-      new PDFViewWords(appConfig.wordsView, eventBus, pdfLinkService);
+      // new PDFViewWords(appConfig.wordsView, eventBus, pdfLinkService);
     }
 
     this.pdfDocumentProperties = new PDFDocumentProperties(
@@ -550,6 +550,7 @@ const PDFViewerApplication = {
   },
 
   zoomIn(ticks) {
+    // console.log('1', ticks, this.pdfViewer.isInPresentationMode);
     if (this.pdfViewer.isInPresentationMode) {
       return;
     }
@@ -1139,12 +1140,18 @@ const PDFViewerApplication = {
   },
 
   load(pdfDocument) {
+    console.log('app.js load');
     this.pdfDocument = pdfDocument;
 
     pdfDocument.getDownloadInfo().then(() => {
       this.downloadComplete = true;
       this.loadingBar.hide();
-
+      // console.log('app.js load', PDFViewerApplication.appConfig.viewerContainer.clientHeight);
+      let {viewerContainer} = PDFViewerApplication.appConfig;
+      let tempDom = document.createElement('div');
+      tempDom.setAttribute('id', 'viewerCover');
+      tempDom.setAttribute('style', `width: ${viewerContainer.firstChild.clientWidth}px; height: ${viewerContainer.clientHeight}px`);
+      PDFViewerApplication.appConfig.viewerContainer.appendChild(tempDom);
       firstPagePromise.then(() => {
         this.eventBus.dispatch("documentloaded", { source: this });
       });
@@ -1774,6 +1781,7 @@ const PDFViewerApplication = {
     eventBus._on("spreadmodechanged", webViewerSpreadModeChanged);
     eventBus._on("documentproperties", webViewerDocumentProperties);
     eventBus._on("find", webViewerFind);
+    eventBus._on("findwords", webViewerWordsFind);
     eventBus._on("findfromurlhash", webViewerFindFromUrlHash);
     eventBus._on("updatefindmatchescount", webViewerUpdateFindMatchesCount);
     eventBus._on("updatefindcontrolstate", webViewerUpdateFindControlState);
@@ -1805,6 +1813,13 @@ const PDFViewerApplication = {
     window.addEventListener("visibilitychange", webViewerVisibilityChange);
     window.addEventListener("wheel", webViewerWheel, { passive: false });
     window.addEventListener("touchstart", webViewerTouchStart, {
+      passive: false,
+    });
+    window.addEventListener("touchmove", throttle(webViewerTouchMove, 200), {
+      passive: false,
+    });
+    // this.appConfig.viewerContainer.addEventListener("touchmove", webViewerTouchMove, false);
+    window.addEventListener("touchend", webViewerTouchEnd, {
       passive: false,
     });
     window.addEventListener("click", webViewerClick);
@@ -1854,6 +1869,7 @@ const PDFViewerApplication = {
     eventBus._off("spreadmodechanged", webViewerSpreadModeChanged);
     eventBus._off("documentproperties", webViewerDocumentProperties);
     eventBus._off("find", webViewerFind);
+    eventBus._off("findwords", webViewerWordsFind);
     eventBus._off("findfromurlhash", webViewerFindFromUrlHash);
     eventBus._off("updatefindmatchescount", webViewerUpdateFindMatchesCount);
     eventBus._off("updatefindcontrolstate", webViewerUpdateFindControlState);
@@ -1929,9 +1945,9 @@ if (typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")) {
       // IE10 / IE11 does not include an origin in `blob:`-URLs. So don't block
       // any blob:-URL. The browser's same-origin policy will block requests to
       // blob:-URLs from other origins, so this is safe.
-      if (origin !== viewerOrigin && protocol !== "blob:") {
-        throw new Error("file origin does not match viewer's");
-      }
+      // if (origin !== viewerOrigin && protocol !== "blob:") {
+      //   throw new Error("file origin does not match viewer's");
+      // }
     } catch (ex) {
       const message = ex && ex.message;
       PDFViewerApplication.l10n
@@ -1969,6 +1985,7 @@ function loadAndEnablePDFBug(enabledTabs) {
 }
 
 function webViewerInitialized() {
+  // console.log('app.js webViewerInitialized', PDFViewerApplication.appConfig.viewerContainer.height);
   const appConfig = PDFViewerApplication.appConfig;
   let file;
   if (typeof PDFJSDev === "undefined" || PDFJSDev.test("GENERIC")) {
@@ -2477,8 +2494,19 @@ function webViewerFind(evt) {
   });
 }
 
+function webViewerWordsFind(evt) {
+  PDFViewerApplication.findController.executeCommand("find" + evt.type, {
+    query: evt.query,
+    phraseSearch: false,
+    caseSensitive: false,
+    entireWord: false,
+    highlightAll: true,
+    findPrevious: evt.findPrevious
+  });
+}
+
 function webViewerFindFromUrlHash(evt) {
-  PDFViewerApplication.findController.executeCommand("findMultiWord", {
+  PDFViewerApplication.findController.executeCommand("find", {
     query: evt.query,
     phraseSearch: evt.phraseSearch,
     caseSensitive: false,
@@ -2569,7 +2597,7 @@ function webViewerWheel(evt) {
     pdfViewer,
     supportedMouseWheelZoomModifierKeys,
   } = PDFViewerApplication;
-
+  // console.log('0', pdfViewer.isInPresentationMode);
   if (pdfViewer.isInPresentationMode) {
     return;
   }
@@ -2635,7 +2663,9 @@ function webViewerWheel(evt) {
   }
 }
 
+let startX = 0, endX = 0;
 function webViewerTouchStart(evt) {
+  // console.log('touchmove', PDFViewerApplication.pdfViewer.isInPresentationMode);
   if (evt.touches.length > 1) {
     // Disable touch-based zooming, because the entire UI bits gets zoomed and
     // that doesn't look great. If we do want to have a good touch-based
@@ -2646,7 +2676,55 @@ function webViewerTouchStart(evt) {
     // experience we can make the touchmove events drive the existing step-zoom
     // behaviour that the ctrl+mousewheel path takes.
     evt.preventDefault();
+    if (evt.touches.length == 2) {
+      let touch1 = evt.touches[0],  // 第一根手指touch事件
+      touch2 = evt.touches[1];  // 第二根手指touch事件
+      // 缩放图片的时候X坐标起始值
+      let tempX = touch2.pageX - touch1.pageX;
+      let tempY = touch2.pageY - touch1.pageY;
+      startX = Math.sqrt(tempX * tempX + tempY * tempY);
+      // startX = Math.abs(temp);
+    }
+    // alert(`touchstart ${startX}`);
   }
+}
+function throttle(func, delay) {
+  var prev = Date.now();
+  return function() {
+      var context = this;
+      var args = arguments;
+      var now = Date.now();
+      if (now - prev >= delay) {
+          func.apply(context, args);
+          prev = Date.now();
+      }
+  }
+}
+function webViewerTouchMove(evt) {
+  console.log('touchmove', PDFViewerApplication.pdfViewer.isInPresentationMode, evt.touches, evt.touches.length);
+  if (evt.touches.length > 1) {
+    // evt.preventDefault();
+    if (evt.touches.length == 2) {
+      let touch1 = evt.touches[0],  // 第一根手指touch事件
+      touch2 = evt.touches[1];  // 第二根手指touch事件
+      // 缩放图片的时候X坐标滑动变化值
+      let tempX = touch2.pageX - touch1.pageX;
+      let tempY = touch2.pageY - touch1.pageY;
+      endX = Math.sqrt(tempX * tempX + tempY * tempY);
+      // endX = Math.abs(temp);
+      let scale = parseInt(endX - startX);
+      if(scale > 0){
+        PDFViewerApplication.zoomIn();
+      } else {
+        PDFViewerApplication.zoomOut();
+      }
+    }
+    // alert(`touchmove ${endX}, ${startX} `);
+  }
+}
+
+function webViewerTouchEnd(evt) {
+  // console.log('touchend', PDFViewerApplication.pdfViewer.isInPresentationMode, evt.touches);
 }
 
 function webViewerClick(evt) {

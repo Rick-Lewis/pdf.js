@@ -23,7 +23,7 @@ See https://github.com/adobe-type-tools/cmap-resources
 <html dir="ltr" mozdisallowselectionprint>
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!--#if GENERIC || CHROME-->
     <meta name="google" content="notranslate">
 <!--#endif-->
@@ -57,12 +57,10 @@ See https://github.com/adobe-type-tools/cmap-resources
     </script>
 
     <script src="viewer.js" type="module-shim"></script>
-    
+    <script src="../node_modules/vconsole/dist/vconsole.min.js"></script>
     <script>
-      window.addEventListener("message", receiveMessage, false);
-      function receiveMessage(event) {
-          console.log('viewer.html message', event);
-      }
+      // init vConsole
+      var vConsole = new VConsole();
     </script>
 <!--#endif-->
 
@@ -112,32 +110,7 @@ See https://github.com/adobe-type-tools/cmap-resources
       </div>  <!-- sidebarContainer -->
 
       <div id="mainContainer">
-        <!-- <div class="wordsView hidden doorHanger" id="words"> -->
-          <!-- <div class="list-item">
-            <div class="toolbarField">商</div>
-            <div class="splitToolbarButton">
-              <button class="toolbarButton findPrevious" title="Find the previous occurrence of the phrase" tabindex="92" data-l10n-id="find_previous">
-                <span data-l10n-id="find_previous_label">Previous</span>
-              </button>
-              <div class="splitToolbarButtonSeparator"></div>
-              <button class="toolbarButton findNext" title="Find the next occurrence of the phrase" tabindex="93" data-l10n-id="find_next">
-                <span data-l10n-id="find_next_label">Next</span>
-              </button>
-            </div>
-          </div>
-          <div class="list-item">
-            <div class="toolbarField">修</div>
-            <div class="splitToolbarButton">
-              <button class="toolbarButton findPrevious" title="Find the previous occurrence of the phrase" tabindex="92" data-l10n-id="find_previous">
-                <span data-l10n-id="find_previous_label">Previous</span>
-              </button>
-              <div class="splitToolbarButtonSeparator"></div>
-              <button class="toolbarButton findNext" title="Find the next occurrence of the phrase" tabindex="93" data-l10n-id="find_next">
-                <span data-l10n-id="find_next_label">Next</span>
-              </button>
-            </div>
-          </div> -->
-        <!-- </div> -->
+        <!-- <div class="wordsView hidden doorHanger" id="words"></div> -->
         <div class="findbar hidden doorHanger" id="findbar">
           <div>
             <div id="findbarInputContainer">
@@ -278,9 +251,9 @@ See https://github.com/adobe-type-tools/cmap-resources
                 </div>
                 <input type="number" id="pageNumber" class="toolbarField pageNumber" title="Page" value="1" size="4" min="1" tabindex="15" data-l10n-id="page" autocomplete="off">
                 <span id="numPages" class="toolbarLabel"></span>
-                <button id="viewWordsFind" class="toolbarButton" title="Words" tabindex="15" data-l10n-id="words">
+                <!-- <button id="viewWordsFind" class="toolbarButton" title="Words" tabindex="15" data-l10n-id="words">
                   <span data-l10n-id="words_label">Words</span>
-                </button>
+                </button> -->
               </div>
               <div id="toolbarViewerRight">
                 <button id="presentationMode" class="toolbarButton presentationMode hiddenLargeView" title="Switch to Presentation Mode" tabindex="31" data-l10n-id="presentation_mode">
@@ -358,7 +331,9 @@ See https://github.com/adobe-type-tools/cmap-resources
         </menu>
 
         <div id="viewerContainer" tabindex="0">
-          <div id="viewer" class="pdfViewer"></div>
+          <!-- <div id="viewerCover"></div> -->
+          <div id="viewer" class="pdfViewer">
+          </div>
         </div>
 
         <div id="errorWrapper" hidden='true'>

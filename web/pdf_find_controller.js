@@ -25,7 +25,7 @@ const FindState = {
 };
 
 const FIND_TIMEOUT = 250; // ms
-const MATCH_SCROLL_OFFSET_TOP = -50; // px
+const MATCH_SCROLL_OFFSET_TOP = -300; // px
 const MATCH_SCROLL_OFFSET_LEFT = -400; // px
 
 const CHARACTERS_TO_NORMALIZE = {
@@ -151,13 +151,15 @@ class PDFFindController {
           this._nextMatch();
           this._findTimeout = null;
         }, FIND_TIMEOUT);
-      } else if (cmd === "findMultiWord") {
-        console.log("findMultiWord");
-        this._findTimeout = setTimeout(() => {
-          this._nextMatch();
-          this._findTimeout = null;
-        }, FIND_TIMEOUT);
-      } else if (this._dirtyMatch) {
+      } 
+      // else if (cmd === "findMultiWord") {
+      //   console.log("findMultiWord");
+      //   this._findTimeout = setTimeout(() => {
+      //     this._nextMatch();
+      //     this._findTimeout = null;
+      //   }, FIND_TIMEOUT);
+      // } 
+      else if (this._dirtyMatch) {
         // Immediately trigger searching for non-'find' operations, when the
         // current state needs to be reset and matches re-calculated.
         this._nextMatch();

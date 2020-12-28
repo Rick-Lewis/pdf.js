@@ -39,6 +39,7 @@ class PDFFindBar {
     this.findResultsCount = options.findResultsCount || null;
     this.findPreviousButton = options.findPreviousButton || null;
     this.findNextButton = options.findNextButton || null;
+    this.saveButton = options.saveButton || null;
     this.eventBus = eventBus;
     this.l10n = l10n;
 
@@ -84,6 +85,20 @@ class PDFFindBar {
       this.dispatchEvent("entirewordchange");
     });
 
+    this.saveButton.addEventListener("click", (e) => {
+      console.log('PDFViewWords words click listen saveButton', e);
+      let temp = e.target.parentElement.parentElement.firstElementChild.firstElementChild.value;
+      if(temp){
+        let result = {
+          event: 'saveKey',
+          params: {
+            keyword: temp
+          }
+        };
+        window.parent.postMessage(result, window.location.origin);
+      }
+    });
+
     this.eventBus._on("resize", this._adjustWidth.bind(this));
 
     //多词高亮查询
@@ -92,19 +107,63 @@ class PDFFindBar {
     this.words.addEventListener("click", function(e) {
       let previousClick = true;
       if(e.target.className.includes('findNext')){
-        this.findValue = e.target.parentElement.previousElementSibling.innerText;
+        this.findValue = e.target.parentElement.previousElementSibling.value;
         previousClick = false;
         console.log('PDFViewWords words click listen findNext', this.findValue);
-        this.dispatchWordsEvent("again", previousClick);
+        this.dispatchWordsEvent("again", previousClick, this.findValue);
       } else if(e.target.className.includes('findPrevious')){
-        this.findValue = e.target.parentElement.previousElementSibling.innerText;
+        this.findValue = e.target.parentElement.previousElementSibling.value;
         console.log('PDFViewWords words click listen findPrevious', this.findValue);
-        this.dispatchWordsEvent("again", previousClick);
+        this.dispatchWordsEvent("again", previousClick, this.findValue);
       } else if(e.target.className.includes('saveToPopular')){
-        this.findValue = e.target.parentElement.parentElement.firstElementChild.innerText;
-        console.log('PDFViewWords words click listen saveToPopularContainer', this.findValue);
+        this.findValue = e.target.parentElement.parentElement.firstElementChild.value;
+        let temp = e.target.parentElement.parentElement.firstElementChild.getAttribute('data-id');
+        let result = {
+          event: 'saveKey',
+          params: {
+            keyword: this.findValue
+          }
+        };
+        if(temp){
+          result.params.id = temp;
+        }
+        console.log('PDFViewWords words click listen saveToPopular', this.findValue, temp);
+        window.parent.postMessage(result, window.location.origin);
+      } else if(e.target.className.includes('delete')){
+        this.findValue = e.target.parentElement.parentElement.firstElementChild.value;
+        let temp = e.target.parentElement.parentElement.firstElementChild.getAttribute('data-id');
+        let result = {
+          event: 'deleteKey',
+          params: {}
+        };
+        if(temp){
+          result.params.id = temp;
+        }
+        console.log('PDFViewWords words click listen delete', this.findValue, temp);
+        window.parent.postMessage(result, window.location.origin);
+        // e.target.parentElement.parentElement.remove();
       }
-    });
+    }.bind(this));
+    //iframe获取父容器传参
+    // this.params = {
+    //   "path": "",
+    //   "keywords":[{
+    //     "id": null,
+    //     "keyword": "甲方于本合同生效之日起的内，向乙方预付本合同项下全部费用的0日40%，即元",
+    //     "type":"NON_STANDARD"
+    //   },{
+    //     "id": "id，只有用户自定义的关键词才会有id",
+    //     "keyword": "新增",
+    //     "type":"PERSONAL"
+    //   }]
+    // };
+    this.params = {};
+    window.addEventListener("message", receiveMessage.bind(this), false);
+    function receiveMessage(event) {
+      console.log('viewer.html message', event);
+      this.params = event.data;
+      this._initView();
+    }
   }
 
   reset() {
@@ -289,43 +348,70 @@ class PDFFindBar {
   }
 
   _initView(){
-    const hash = location.hash.split('#')[1];
-    const params = parseQueryString(hash);
-    if ("search" in params) {
+    // const hash = location.hash.split('#')[1];
+    if(!this.params || JSON.stringify(this.params) === '{}') return;
+    // const params = parseQueryString(hash);
+    // if ("search" in params) {
       let tempHtml = '';
-      let keys = params.search.split(',');
-      for(let i = 0; i <= keys.length -1; i++){
-          tempHtml = tempHtml + `<div class="list-item">
-          <div class="toolbarField">${keys[i]}</div>
-          <div class="splitToolbarButton">
-            <button class="toolbarButton findPrevious" title="Find the previous occurrence of the phrase" tabindex="92" data-l10n-id="find_previous">
-              <span data-l10n-id="find_previous_label">Previous</span>
-            </button>
-            <div class="splitToolbarButtonSeparator"></div>
-            <button class="toolbarButton findNext" title="Find the next occurrence of the phrase" tabindex="93" data-l10n-id="find_next">
-              <span data-l10n-id="find_next_label">Next</span>
-            </button>
-          </div>
-          <div class="saveToPopularContainer">
-              <button class="toolbarField saveToPopular" tabindex="97">保存为常用</button>
-          </div>
-        </div>`;
+      // let keys = params.search.split(',');
+      for(let i = 0; i <= this.params.keywords.length - 1; i++){
+          let temp = '';
+          switch(this.params.keywords[i].type){
+            case 'NON_STANDARD':
+            case 'CUSTOM': 
+            temp = `<div class="list-item">
+              <textarea class="toolbarField" disabled style="width: 450px; height: 16px; resize: vertical;" >${this.params.keywords[i].keyword}</textarea>
+              <div class="splitToolbarButton">
+                <button class="toolbarButton findPrevious" title="Find the previous occurrence of the phrase" tabindex="92" data-l10n-id="find_previous">
+                  <span data-l10n-id="find_previous_label">Previous</span>
+                </button>
+                <div class="splitToolbarButtonSeparator"></div>
+                <button class="toolbarButton findNext" title="Find the next occurrence of the phrase" tabindex="93" data-l10n-id="find_next">
+                  <span data-l10n-id="find_next_label">Next</span>
+                </button>
+              </div>
+            </div>`
+            break;
+            case 'PERSONAL': 
+            temp = `<div class="list-item">
+            <textarea data-id="${this.params.keywords[i].id}" class="toolbarField" style="width: 450px; height: 16px; resize: vertical;" />${this.params.keywords[i].keyword}</textarea>
+            <div class="splitToolbarButton">
+              <button class="toolbarButton findPrevious" title="Find the previous occurrence of the phrase" tabindex="92" data-l10n-id="find_previous">
+                <span data-l10n-id="find_previous_label">Previous</span>
+              </button>
+              <div class="splitToolbarButtonSeparator"></div>
+              <button class="toolbarButton findNext" title="Find the next occurrence of the phrase" tabindex="93" data-l10n-id="find_next">
+                <span data-l10n-id="find_next_label">Next</span>
+              </button>
+            </div>
+            <div class="saveToPopularContainer">
+              <button class="toolbarField saveToPopular" style="margin-right: 2px;" tabindex="97">保存</button>
+              <button class="toolbarField delete" tabindex="98">删除</button>
+            </div>
+          </div>`
+            break;
+          }
+          tempHtml = tempHtml + temp;
       }
       this.words.innerHTML = tempHtml;
-    }
+      this.dispatchWordsEvent();
+    // }
   }
-  dispatchWordsEvent(type, findPrev) {
-    this.eventBus.dispatch("find", {
-        source: this,
-        type,
-        query: this.findValue,
-        phraseSearch: false,
-        caseSensitive: false,
-        entireWord: false,
-        highlightAll: true,
-        findPrevious: findPrev,
+  dispatchWordsEvent(type = '', findPrev = false, value = '') {
+    if(!value){
+      let temp = this.params.keywords.map(item => item.keyword);
+      value = temp.join(',');
+    }
+    this.eventBus.dispatch("findwords", {
+      source: this,
+      type,
+      query: value,
+      findPrevious: findPrev
     });
-}
+  }
+  parseElement(htmlString){
+    return new DOMParser().parseFromString(htmlString,'text/html').body.childNodes[0]
+  }
 }
 
 export { PDFFindBar };

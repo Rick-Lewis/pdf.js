@@ -312,6 +312,14 @@ html[dir="rtl"] #sidebarContent {
   left: 0;
   outline: none;
 }
+#viewerCover{
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  z-index: 9999;
+}
 #viewerContainer:not(.pdfPresentationMode) {
   transition-duration: var(--sidebar-transition-duration);
   transition-timing-function: var(--sidebar-transition-timing-function);
@@ -474,7 +482,7 @@ html[dir="rtl"] #toolbarContainer,
 
 .findbar {
   min-width: 300px;
-  max-width: 750px;
+  max-width: 735px;
   background-color: var(--toolbar-bg-color);
 }
 .findbar > div {

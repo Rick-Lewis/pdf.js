@@ -667,6 +667,7 @@ class BaseViewer {
   }
 
   _setScaleUpdatePages(newScale, newValue, noScroll = false, preset = false) {
+    console.log('base_viewer.js _setScaleUpdatePages');
     this._currentScaleValue = newValue.toString();
 
     if (isSameScale(this._currentScale, newScale)) {
@@ -683,6 +684,10 @@ class BaseViewer {
     for (let i = 0, ii = this._pages.length; i < ii; i++) {
       this._pages[i].update(newScale);
     }
+    let {viewerContainer} = PDFViewerApplication.appConfig;
+    let tempDom = document.getElementById('viewerCover');
+    if(tempDom)
+    tempDom.setAttribute('style', `width: ${viewerContainer.firstChild.clientWidth}px; height: ${viewerContainer.clientHeight}px`);
     this._currentScale = newScale;
 
     if (!noScroll) {

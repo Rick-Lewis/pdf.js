@@ -41,7 +41,7 @@ var defaultMimeType = "application/octet-stream";
 
 function WebServer() {
   this.root = ".";
-  this.host = "localhost";
+  this.host = "";
   this.port = 0;
   this.server = null;
   this.verbose = false;
@@ -53,12 +53,26 @@ function WebServer() {
   };
 }
 WebServer.prototype = {
+  getIPAddress: function(){
+    var interfaces = require('os').networkInterfaces();
+    for(var devName in interfaces){
+        var iface = interfaces[devName];
+        for(var i=0;i<iface.length;i++){
+            var alias = iface[i];
+            // console.log(devName, alias);
+            if(devName === '本地连接' && alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal){ // 获取局域网ip地址
+                return alias.address;
+            }
+        }
+    }
+    return '';
+  },
   start: function (callback) {
     this._ensureNonZeroPort();
     this.server = http.createServer(this._handler.bind(this));
     this.server.listen(this.port, this.host, callback);
     console.log(
-      "Server running at http://" + this.host + ":" + this.port + "/"
+      "Server running at http://" + (this.getIPAddress() ? this.getIPAddress() : 'localhost') + ":" + this.port + "/"
     );
   },
   stop: function (callback) {

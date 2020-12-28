@@ -145,12 +145,13 @@ function getViewerConfiguration() {
       findPreviousButton: document.getElementById("findPrevious"),
       findNextButton: document.getElementById("findNext"),
       //多词高亮查询
+      saveButton: document.getElementById("saveToPopular"),
       words: document.getElementById("words"),
     },
-    wordsView: {
-      toggleButton: document.getElementById("viewWordsFind"),
-      words: document.getElementById("words"),
-    },
+    // wordsView: {
+    //   toggleButton: document.getElementById("viewWordsFind"),
+    //   words: document.getElementById("words"),
+    // },
     passwordOverlay: {
       overlayName: "passwordOverlay",
       container: document.getElementById("passwordOverlay"),
