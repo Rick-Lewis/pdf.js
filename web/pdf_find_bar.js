@@ -27,6 +27,7 @@ const MATCHES_COUNT_LIMIT = 1000;
  */
 class PDFFindBar {
   constructor(options, eventBus, l10n = NullL10n) {
+    console.log('PDFFindBar start');
     this.opened = false;
 
     this.bar = options.bar || null;
@@ -40,6 +41,8 @@ class PDFFindBar {
     this.findPreviousButton = options.findPreviousButton || null;
     this.findNextButton = options.findNextButton || null;
     this.saveButton = options.saveButton || null;
+    this.multiFindPreviousButton = options.multiFindPreviousButton || null;
+    this.multiFindNextButton = options.multiFindNextButton || null;
     this.eventBus = eventBus;
     this.l10n = l10n;
 
@@ -158,12 +161,37 @@ class PDFFindBar {
     //   }]
     // };
     this.params = {};
+    this.currentIndex = 0; // 多词交替搜索时当前索引
     window.addEventListener("message", receiveMessage.bind(this), false);
     function receiveMessage(event) {
       console.log('viewer.html message', event);
       this.params = event.data;
       this._initView();
     }
+
+    this.multiFindPreviousButton.addEventListener("click", () => {
+      console.log('multiFindPreviousButton');
+      if(this.params.keywords && this.params.keywords.length > 0){
+        this.dispatchWordsEvent("again", false, this.params.keywords[this.currentIndex].keyword);
+          if(this.currentIndex === 0) { // 超出数组长度，重新循环
+            this.currentIndex = this.params.keywords.length - 1;
+          } else {
+            this.currentIndex--;
+          }
+      }
+    });
+  
+    this.multiFindNextButton.addEventListener("click", () => {
+      console.log('multiFindNextButton');
+      if(this.params.keywords && this.params.keywords.length > 0){
+        this.dispatchWordsEvent("again", false, this.params.keywords[this.currentIndex].keyword);
+          if(this.currentIndex === this.params.keywords.length - 1) { // 超出数组长度，重新循环
+            this.currentIndex = 0;
+          } else {
+            this.currentIndex++;
+          }
+      }
+    });
   }
 
   reset() {
@@ -312,6 +340,7 @@ class PDFFindBar {
     this.bar.classList.add("hidden");
 
     this.eventBus.dispatch("findbarclose", { source: this });
+    this.dispatchWordsEvent();
   }
 
   toggle() {
@@ -360,7 +389,7 @@ class PDFFindBar {
             case 'NON_STANDARD':
             case 'CUSTOM': 
             temp = `<div class="list-item">
-              <textarea class="toolbarField" disabled style="width: 450px; height: 16px; resize: vertical;" >${this.params.keywords[i].keyword}</textarea>
+              <textarea class="toolbarField" disabled style="height: 16px; resize: vertical;" >${this.params.keywords[i].keyword}</textarea>
               <div class="splitToolbarButton">
                 <button class="toolbarButton findPrevious" title="Find the previous occurrence of the phrase" tabindex="92" data-l10n-id="find_previous">
                   <span data-l10n-id="find_previous_label">Previous</span>
@@ -374,7 +403,7 @@ class PDFFindBar {
             break;
             case 'PERSONAL': 
             temp = `<div class="list-item">
-            <textarea data-id="${this.params.keywords[i].id}" class="toolbarField" style="width: 450px; height: 16px; resize: vertical;" />${this.params.keywords[i].keyword}</textarea>
+            <textarea data-id="${this.params.keywords[i].id}" class="toolbarField" style="height: 16px; resize: vertical;" />${this.params.keywords[i].keyword}</textarea>
             <div class="splitToolbarButton">
               <button class="toolbarButton findPrevious" title="Find the previous occurrence of the phrase" tabindex="92" data-l10n-id="find_previous">
                 <span data-l10n-id="find_previous_label">Previous</span>

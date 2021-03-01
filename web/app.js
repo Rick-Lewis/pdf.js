@@ -1146,12 +1146,15 @@ const PDFViewerApplication = {
     pdfDocument.getDownloadInfo().then(() => {
       this.downloadComplete = true;
       this.loadingBar.hide();
-      // console.log('app.js load', PDFViewerApplication.appConfig.viewerContainer.clientHeight);
-      let {viewerContainer} = PDFViewerApplication.appConfig;
-      let tempDom = document.createElement('div');
-      tempDom.setAttribute('id', 'viewerCover');
-      tempDom.setAttribute('style', `width: ${viewerContainer.firstChild.clientWidth}px; height: ${viewerContainer.clientHeight}px`);
-      PDFViewerApplication.appConfig.viewerContainer.appendChild(tempDom);
+      
+      setTimeout(() => {
+        let {viewerContainer} = PDFViewerApplication.appConfig;
+        let tempDom = document.createElement('div');
+        tempDom.setAttribute('id', 'viewerCover');
+        tempDom.setAttribute('style', `width: ${viewerContainer.firstChild.clientWidth}px; height: ${viewerContainer.clientHeight}px`);
+        PDFViewerApplication.appConfig.viewerContainer.appendChild(tempDom);
+      }, 0);
+
       firstPagePromise.then(() => {
         this.eventBus.dispatch("documentloaded", { source: this });
       });

@@ -147,6 +147,9 @@ function getViewerConfiguration() {
       //多词高亮查询
       saveButton: document.getElementById("saveToPopular"),
       words: document.getElementById("words"),
+      //多词切换
+      multiFindPreviousButton: document.getElementById("multiFindPrevious"),
+      multiFindNextButton: document.getElementById("multiFindNext"),
     },
     // wordsView: {
     //   toggleButton: document.getElementById("viewWordsFind"),

@@ -318,7 +318,7 @@ html[dir="rtl"] #sidebarContent {
   left: 0;
   right: 0;
   margin: 0 auto;
-  z-index: 9999;
+  z-index: 99;
 }
 #viewerContainer:not(.pdfPresentationMode) {
   transition-duration: var(--sidebar-transition-duration);
@@ -1929,6 +1929,34 @@ html[dir="ltr"] .findbar .wordsView .splitToolbarButton .findNext {
 .findbar .wordsView .list-item > div:first-child{
   width: 200px;
 }
-/* .wordsView .list-item{
-
-} */
+#sideToolbarContainer{
+  position: absolute; 
+  right: 24px; 
+  top: 54px;
+}
+#sideToolbarContainer .btn{
+  display: block;
+  width: 20px;
+  height: 24px;
+  border-radius: 0;
+  border: none;
+  position: relative;
+  background-color: var(--button-hover-color);
+}
+#sideToolbarContainer .btn::before{
+  opacity: var(--toolbar-icon-opacity);
+  position: absolute;
+  top: 5px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+#sideToolbarContainer .btn.findPrevious{
+  margin-bottom: 1px;
+}
+#sideToolbarContainer .btn.findPrevious::before{
+  content: var(--findbarButton-previous-icon);
+}
+#sideToolbarContainer .btn.findNext::before{
+  content: var(--findbarButton-next-icon);
+}

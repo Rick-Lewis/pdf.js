@@ -112,7 +112,7 @@ See https://github.com/adobe-type-tools/cmap-resources
       <div id="mainContainer">
         <!-- <div class="wordsView hidden doorHanger" id="words"></div> -->
         <div class="findbar hidden doorHanger" id="findbar">
-          <div>
+          <div style="height: auto;">
             <div id="findbarInputContainer">
               <input id="findInput" class="toolbarField" title="Find" placeholder="Find in document…" tabindex="91" data-l10n-id="find_input">
               <div class="splitToolbarButton">
@@ -444,6 +444,12 @@ See https://github.com/adobe-type-tools/cmap-resources
 <!--#endif-->
       </div>  <!-- overlayContainer -->
 
+      <div id="sideToolbarContainer">
+        <button id="multiFindPrevious" class="btn findPrevious">
+        </button>
+        <button id="multiFindNext" class="btn findNext">
+        </button>
+      </div>
     </div> <!-- outerContainer -->
     <div id="printContainer"></div>
   </body>
